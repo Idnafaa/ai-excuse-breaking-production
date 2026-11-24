@@ -6,22 +6,29 @@ to the output file the grader reads.
 """
 
 import os
-import sys
 
 LINE = (
     "Good news: I found the bug. Bad news: the bug was me, "
     "and I already deployed myself to production."
 )
 
+# The bounty caps the line at 180 characters; keep the guard next to the text
+# so a future edit to the line cannot silently break the gate.
+MAX_CHARS = 180
+
+
+def build_line() -> str:
+    """Return the excuse exactly as it must land in entry.txt."""
+    line = LINE.strip()
+    if not 1 <= len(line) <= MAX_CHARS:
+        raise ValueError(f"excuse is {len(line)} chars, must be 1-{MAX_CHARS}")
+    if "\n" in line or line != line.strip():
+        raise ValueError("excuse must be one clean line")
+    return line
+
 
 def main() -> int:
-    line = LINE.strip()
-    if not 1 <= len(line) <= 180:
-        print(f"excuse is {len(line)} chars, must be 1-180", file=sys.stderr)
-        return 1
-    if "\n" in line:
-        print("excuse must be a single line", file=sys.stderr)
-        return 1
+    line = build_line()
     out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
     os.makedirs(out_dir, exist_ok=True)
     path = os.path.join(out_dir, "entry.txt")
